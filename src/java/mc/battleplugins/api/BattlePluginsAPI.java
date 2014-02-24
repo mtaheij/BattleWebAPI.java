@@ -136,8 +136,7 @@ public class BattlePluginsAPI {
      */
     public void addPluginInfo(Plugin plugin) throws UnsupportedEncodingException {
         PluginDescriptionFile d = plugin.getDescription();
-        addPair("pName", d.getName());
-        addPair("pVersion", d.getVersion());
+        addPair("p"+d.getName(), d.getVersion());
     }
 
     /**
