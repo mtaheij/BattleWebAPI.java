@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -55,8 +56,23 @@ public class BattlePluginsAPI {
     /** Key Value pairs to send */
     final Map<String, String> pairs;
 
+    /** The plugin to update */
+    Plugin plugin;
+
     public BattlePluginsAPI() throws IOException {
+        this(null);
+    }
+
+    public BattlePluginsAPI(Plugin plugin) {
         pairs = new TreeMap<String, String>();
+        this.plugin = plugin;
+        try {
+            this.sendStatistics(plugin);
+        } catch (IOException e) {
+            plugin.getLogger().severe("BattlePluginsAPI was not able to load. Message: " + e.getMessage());
+            plugin.getLogger().log(Level.SEVERE, null, e);
+            sendStats.set(false);
+        }
     }
 
     private static String urlEncode(final String text) throws UnsupportedEncodingException {
@@ -189,8 +205,6 @@ public class BattlePluginsAPI {
         URLConnection connection = url.openConnection(Proxy.NO_PROXY);
 
         byte[] data = toString(pairs).getBytes();
-        System.out.println(toString(pairs));
-        /// Connection information
         connection.addRequestProperty("POST", "/api/web/blog/all HTTP/1.1");
         connection.addRequestProperty("Host", HOST);
         connection.addRequestProperty("X-API-Key", apiKey);
@@ -310,7 +324,7 @@ public class BattlePluginsAPI {
                     sendStats.set(false);
                 }
             }
-        },20*60, 20*60*30/*every 30 min*/);
+        },20, 20*60*30/*every 30 min*/);
     }
 
     /**

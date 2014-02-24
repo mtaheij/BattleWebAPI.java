@@ -11,7 +11,6 @@ public class TestAPI extends TestCase {
     String testDir = System.getProperty("user.home") +
             "/workspace/mc/BattlePluginsAPI/test_files";
     String configFile = testDir+"/TestConfig.yml";
-
     public void testPaste() throws IOException {
         BattlePluginsAPI api = new TestBattlePluginsAPI("TestServer", "1.0", configFile);
         api.pasteFile("TestAPI", testDir+"/TestPasteFile.txt");
