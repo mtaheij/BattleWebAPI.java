@@ -13,6 +13,7 @@ public class TestBattlePluginsAPI extends BattlePluginsAPI {
     String configPath;
     String name;
     String version;
+    int playersOnline = 0;
 
     public TestBattlePluginsAPI(String testServer,String version, String configPath) throws IOException {
         super();
@@ -31,6 +32,10 @@ public class TestBattlePluginsAPI extends BattlePluginsAPI {
         addPair("bServerName", name);
         addPair("bVersion", version);
         addPair("bOnlineMode", "true");
-        addPair("bPlayersOnline", "7");
+        addPair("bPlayersOnline", String.valueOf(playersOnline));
+    }
+
+    public void setPlayersOnline(int playersOnline) {
+        this.playersOnline = playersOnline;
     }
 }

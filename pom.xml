@@ -62,6 +62,10 @@
                 <version>1.6</version>
                 <executions>
                     <execution>
+                        <configuration>
+                            <source>1.7</source>
+                            <target>1.6</target>
+                        </configuration>
                         <phase>package</phase>
                         <!-- Shade (includes these in the final jar) -->
                         <goals>

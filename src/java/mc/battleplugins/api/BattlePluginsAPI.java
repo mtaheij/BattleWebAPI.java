@@ -78,7 +78,7 @@ public class BattlePluginsAPI {
         File f = new File(file);
         addPair("title", title);
         addPair("content", toString(f.getPath()));
-        this.post(new URL(PROTOCOL+"://"+HOST+"/api/web/paste/create"));
+        post(new URL(PROTOCOL + "://" + HOST + "/api/web/paste/create"));
     }
 
     /**
@@ -90,7 +90,7 @@ public class BattlePluginsAPI {
         addPluginInfo(plugin);
         addServerInfo();
         addSystemInfo();
-        this.post(new URL(PROTOCOL+"://"+HOST+"/statistics/set"));
+        post(new URL(PROTOCOL + "://" + HOST + "/statistics/set"));
     }
 
     /**
@@ -154,7 +154,7 @@ public class BattlePluginsAPI {
      */
     public void get(URL baseUrl) throws IOException {
         /// Connect
-        URL url = new URL (baseUrl.getProtocol()+"://"+baseUrl.getHost()+baseUrl.getPath() + "?" + encode(pairs));
+        URL url = new URL (baseUrl.getProtocol()+"://"+baseUrl.getHost()+baseUrl.getPath() + "?" + toString(pairs));
         URLConnection connection = url.openConnection(Proxy.NO_PROXY);
 
         /// Connection information
@@ -188,7 +188,8 @@ public class BattlePluginsAPI {
         /// Connect
         URLConnection connection = url.openConnection(Proxy.NO_PROXY);
 
-        byte[] data = encode(pairs).getBytes();
+        byte[] data = toString(pairs).getBytes();
+        System.out.println(toString(pairs));
         /// Connection information
         connection.addRequestProperty("POST", "/api/web/blog/all HTTP/1.1");
         connection.addRequestProperty("Host", HOST);
@@ -220,7 +221,7 @@ public class BattlePluginsAPI {
         return out.toString();
     }
 
-    String encode(Map<String, String> pairs) throws IOException {
+    String toString(Map<String, String> pairs) throws IOException {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (Entry<String, String> e : pairs.entrySet()) {
@@ -292,19 +293,24 @@ public class BattlePluginsAPI {
         if (timer != null){
             Bukkit.getScheduler().cancelTask(timer);}
         //noinspection deprecation
-        timer = Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, new Runnable(){
+        timer = Bukkit.getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable(){
             @Override
             public void run() {
                 if (!sendStats.get())
                     return;
                 try {
-                    sendStatistics(plugin);
+                    if (!sendStats.get()){
+                        sendStatistics(plugin);
+                    } else if (timer !=null){
+                        Bukkit.getScheduler().cancelTask(timer);
+                        timer = null;
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                     sendStats.set(false);
                 }
             }
-        });
+        },20*60, 20*60*30/*every 30 min*/);
     }
 
     /**
@@ -312,6 +318,10 @@ public class BattlePluginsAPI {
      */
     public void stopSendingStatistics() throws IOException {
         setSending(false);
+        if (timer != null) {
+            Bukkit.getScheduler().cancelTask(timer);
+            timer = null;
+        }
     }
 
     /**

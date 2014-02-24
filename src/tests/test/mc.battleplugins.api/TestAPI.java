@@ -5,6 +5,7 @@ import junit.framework.TestCase;
 import mc.battleplugins.api.BattlePluginsAPI;
 
 import java.io.IOException;
+import java.util.Random;
 
 public class TestAPI extends TestCase {
     String testDir = System.getProperty("user.home") +
@@ -17,8 +18,10 @@ public class TestAPI extends TestCase {
     }
 
     public void testStats() throws IOException {
-        BattlePluginsAPI api = new TestBattlePluginsAPI("TestServer", "1.0", configFile);
+        TestBattlePluginsAPI api = new TestBattlePluginsAPI("TestServer", "1.0", configFile);
+        api.setPlayersOnline(new Random().nextInt(10));
         TestPlugin tp = new TestPlugin("TestPlugin", "1.0");
+
         api.sendStatistics(tp);
     }
 }
