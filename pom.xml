@@ -41,11 +41,6 @@
         <sourceDirectory>${basedir}/src/java</sourceDirectory>
         <!-- Include all the resources we need -->
         <resources>
-            <resource>
-                <targetPath>.</targetPath>
-                <filtering>true</filtering>
-                <directory>${basedir}</directory>
-            </resource>
             <!-- Exclude JUnit test directory -->
             <resource>
                 <directory>src/tests</directory>
