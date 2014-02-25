@@ -67,13 +67,14 @@ public class BattlePluginsAPI {
     }
 
     public BattlePluginsAPI(Plugin plugin) {
+        this.sendStats = new AtomicBoolean(true);
         this.pairs = new TreeMap<String, String>();
         this.plugin = plugin;
         try {
-            if (!getConfig().getBoolean("SendStatistics",false)){
+            if (!getConfig().getBoolean("SendStatistics",false)) {
                 sendStats.set(false);
             } else {
-                this.sendStats = new AtomicBoolean(true);
+                this.sendStats.set(true);
                 this.scheduleSendStats(plugin);
             }
         } catch (IOException e) {

@@ -1,0 +1,1 @@
+Collection of methods for interacting with the battleplugins website. http://battleplugins.com
