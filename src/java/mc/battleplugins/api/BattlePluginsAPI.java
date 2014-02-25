@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -71,11 +72,11 @@ public class BattlePluginsAPI {
         this.pairs = new TreeMap<String, String>();
         this.plugin = plugin;
         try {
-            if (!getConfig().getBoolean("SendStatistics",false)) {
-                sendStats.set(false);
+            if (getConfig().getBoolean("SendStatistics",false)) {
+                sendStats.set(true);
+                scheduleSendStats(plugin);
             } else {
-                this.sendStats.set(true);
-                this.scheduleSendStats(plugin);
+                sendStats.set(false);
             }
         } catch (IOException e) {
             plugin.getLogger().severe("BattlePluginsAPI was not able to load. Message: " + e.getMessage());
@@ -342,7 +343,8 @@ public class BattlePluginsAPI {
                     sendStats.set(false);
                 }
             }
-        },60*20, 60*20*30/*every 30 min*/);
+        },60*20+(new Random().nextInt(20*120))/* start between 1-3 minutes*/,
+                60*20*30/*send stats every 30 min*/);
     }
 
     /**
