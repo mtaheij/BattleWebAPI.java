@@ -339,7 +339,6 @@ public class BattlePluginsAPI {
                     }
                 } catch(UnknownHostException e) {
                     /** Don't send stack trace on no network errors, just continue on*/
-                    System.out.println("plugin = " + plugin.getName());
                 } catch(SocketException e){
                     /** Don't send stack trace on no network errors, just continue on*/
                     if (e.getMessage() == null || !e.getMessage().contains("unreachable")){
