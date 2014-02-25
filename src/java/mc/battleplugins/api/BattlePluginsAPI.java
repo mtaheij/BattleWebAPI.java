@@ -19,6 +19,7 @@ import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -96,7 +97,7 @@ public class BattlePluginsAPI {
      * @return response
      * @throws IOException
      */
-    public List<String> pasteFile(String title, String file) throws IOException {
+    public String pasteFile(String title, String file) throws IOException {
         FileConfiguration c = getConfig();
         apiKey = c.getString("API-Key", null);
 
@@ -105,7 +106,10 @@ public class BattlePluginsAPI {
         File f = new File(file);
         addPair("title", title);
         addPair("content", toString(f.getPath()));
-        return post(new URL(PROTOCOL + "://" + HOST + "/api/web/paste/create"));
+        List<String> result = post(new URL(PROTOCOL + "://" + HOST + "/api/web/paste/create"));
+        if (result == null || result.isEmpty()) return null;
+        String[] r = result.get(0).replaceAll("}|\\{|\"","").split(":");
+        return PROTOCOL + "://" + HOST + "/paste/"+r[1];
     }
 
     /**
@@ -333,7 +337,11 @@ public class BattlePluginsAPI {
                         Bukkit.getScheduler().cancelTask(timer);
                         timer = null;
                     }
+                } catch(UnknownHostException e) {
+                    /** Don't send stack trace on no network errors, just continue on*/
+                    System.out.println("plugin = " + plugin.getName());
                 } catch(SocketException e){
+                    /** Don't send stack trace on no network errors, just continue on*/
                     if (e.getMessage() == null || !e.getMessage().contains("unreachable")){
                         e.printStackTrace();
                         sendStats.set(false);
