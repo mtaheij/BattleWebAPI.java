@@ -1,2 +1,4 @@
-# #checking
+# API-Key : unique id for server authentication
+# SendStatistics : set to false to not send statistics
 API-Key: ''
+SendStatistics: true

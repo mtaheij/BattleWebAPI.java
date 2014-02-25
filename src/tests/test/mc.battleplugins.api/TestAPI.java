@@ -20,7 +20,6 @@ public class TestAPI extends TestCase {
         TestBattlePluginsAPI api = new TestBattlePluginsAPI("TestServer", "1.0", configFile);
         api.setPlayersOnline(new Random().nextInt(10));
         TestPlugin tp = new TestPlugin("TestPlugin", "1.0");
-
         api.sendStatistics(tp);
     }
 }

@@ -15,12 +15,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Proxy;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -45,7 +48,7 @@ public class BattlePluginsAPI {
     static final String USER_AGENT = "BattlePluginsAPI/v1.0";
 
     /** api key: used to verify requests */
-    protected String apiKey;
+    protected String apiKey = "";
 
     /** whether to send stats or not */
     AtomicBoolean sendStats;
@@ -60,14 +63,19 @@ public class BattlePluginsAPI {
     Plugin plugin;
 
     public BattlePluginsAPI() throws IOException {
-        this(null);
+        this.pairs = new TreeMap<String, String>();
     }
 
     public BattlePluginsAPI(Plugin plugin) {
-        pairs = new TreeMap<String, String>();
+        this.pairs = new TreeMap<String, String>();
         this.plugin = plugin;
         try {
-            this.sendStatistics(plugin);
+            if (!getConfig().getBoolean("SendStatistics",false)){
+                sendStats.set(false);
+            } else {
+                this.sendStats = new AtomicBoolean(true);
+                this.scheduleSendStats(plugin);
+            }
         } catch (IOException e) {
             plugin.getLogger().severe("BattlePluginsAPI was not able to load. Message: " + e.getMessage());
             plugin.getLogger().log(Level.SEVERE, null, e);
@@ -83,9 +91,10 @@ public class BattlePluginsAPI {
      * Paste the given file to the battleplugins website
      * @param title Title of the paste
      * @param file Full path to the file to paste
+     * @return response
      * @throws IOException
      */
-    public void pasteFile(String title, String file) throws IOException {
+    public List<String> pasteFile(String title, String file) throws IOException {
         FileConfiguration c = getConfig();
         apiKey = c.getString("API-Key", null);
 
@@ -94,7 +103,7 @@ public class BattlePluginsAPI {
         File f = new File(file);
         addPair("title", title);
         addPair("content", toString(f.getPath()));
-        post(new URL(PROTOCOL + "://" + HOST + "/api/web/paste/create"));
+        return post(new URL(PROTOCOL + "://" + HOST + "/api/web/paste/create"));
     }
 
     /**
@@ -168,7 +177,7 @@ public class BattlePluginsAPI {
      * @param baseUrl url destination
      * @throws IOException
      */
-    public void get(URL baseUrl) throws IOException {
+    public List<String> get(URL baseUrl) throws IOException {
         /// Connect
         URL url = new URL (baseUrl.getProtocol()+"://"+baseUrl.getHost()+baseUrl.getPath() + "?" + toString(pairs));
         URLConnection connection = url.openConnection(Proxy.NO_PROXY);
@@ -186,13 +195,15 @@ public class BattlePluginsAPI {
 
         /// Get our response
         final BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        List<String> response = new ArrayList<String>();
         String line;
         while ( (line = br.readLine()) != null){
-            System.out.println(line);
+            response.add(line);
         }
 
         os.close();
         br.close();
+        return response;
     }
 
     /**
@@ -200,7 +211,7 @@ public class BattlePluginsAPI {
      * @param url destination
      * @throws IOException
      */
-    public void post(URL url) throws IOException {
+    public List<String> post(URL url) throws IOException {
         /// Connect
         URLConnection connection = url.openConnection(Proxy.NO_PROXY);
 
@@ -219,13 +230,15 @@ public class BattlePluginsAPI {
 
         /// Get our response
         final BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        List<String> response = new ArrayList<String>();
         String line;
         while ( (line = br.readLine()) != null){
-            System.out.println(line);
+            response.add(line);
         }
 
         os.close();
         br.close();
+        return response;
     }
 
     String gzip(String str) throws IOException {
@@ -286,9 +299,11 @@ public class BattlePluginsAPI {
 
         FileConfiguration c;
         c = YamlConfiguration.loadConfiguration(f);
-        if (c.get("API-Key", null) == null) {
-            c.options().header("API-Key : unique id for website authentication");
-            c.options().header("SendStatistics : set to false to not send statistics");
+        if (c.get("API-Key", null) == null || c.get("SendStatistics", null)==null) {
+            c.options().header("Configuration file for BattlePluginsAPI. http://battleplugins.com\n"+
+                    "Allows plugins using BattlePluginsAPI to interface with the website\n"+
+                    "API-Key : unique id for server authentication\n"+
+                    "SendStatistics : set to false to not send statistics");
             c.addDefault("API-Key", "");
             c.addDefault("SendStatistics", true);
             c.options().copyDefaults(true);
@@ -310,21 +325,24 @@ public class BattlePluginsAPI {
         timer = Bukkit.getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable(){
             @Override
             public void run() {
-                if (!sendStats.get())
-                    return;
                 try {
-                    if (!sendStats.get()){
+                    if (sendStats.get()) {
                         sendStatistics(plugin);
-                    } else if (timer !=null){
+                    } else if (timer != null) {
                         Bukkit.getScheduler().cancelTask(timer);
                         timer = null;
+                    }
+                } catch(SocketException e){
+                    if (e.getMessage() == null || !e.getMessage().contains("unreachable")){
+                        e.printStackTrace();
+                        sendStats.set(false);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                     sendStats.set(false);
                 }
             }
-        },20, 20*60*30/*every 30 min*/);
+        },60*20, 60*20*30/*every 30 min*/);
     }
 
     /**
