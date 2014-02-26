@@ -80,7 +80,8 @@ public class BattlePluginsAPI {
                 sendStats.set(false);
             }
         } catch (IOException e) {
-            plugin.getLogger().severe("BattlePluginsAPI was not able to load. Message: " + e.getMessage());
+            plugin.getLogger().severe(
+                    "BattlePluginsAPI was not able to load. Message: " + e.getMessage());
             plugin.getLogger().log(Level.SEVERE, null, e);
             sendStats.set(false);
         }
@@ -101,8 +102,8 @@ public class BattlePluginsAPI {
         FileConfiguration c = getConfig();
         apiKey = c.getString("API-Key", null);
 
-        if (apiKey == null) {
-            throw new IOException("API Key was not found. You need to register before sending pastes");}
+        if (apiKey == null) {throw new IOException(
+                "API Key was not found. You need to register before sending pastes");}
         File f = new File(file);
         addPair("title", title);
         addPair("content", toString(f.getPath()));
@@ -184,7 +185,8 @@ public class BattlePluginsAPI {
      */
     public List<String> get(URL baseUrl) throws IOException {
         /// Connect
-        URL url = new URL (baseUrl.getProtocol()+"://"+baseUrl.getHost()+baseUrl.getPath() + "?" + toString(pairs));
+        URL url = new URL (baseUrl.getProtocol()+"://"+baseUrl.getHost()+
+                baseUrl.getPath() + "?" + toString(pairs));
         URLConnection connection = url.openConnection(Proxy.NO_PROXY);
 
         /// Connection information
@@ -199,7 +201,8 @@ public class BattlePluginsAPI {
         os.flush();
 
         /// Get our response
-        final BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        final BufferedReader br = new BufferedReader(
+                new InputStreamReader(connection.getInputStream()));
         List<String> response = new ArrayList<String>();
         String line;
         while ( (line = br.readLine()) != null){
@@ -234,7 +237,8 @@ public class BattlePluginsAPI {
         os.flush();
 
         /// Get our response
-        final BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        final BufferedReader br = new BufferedReader(
+                new InputStreamReader(connection.getInputStream()));
         List<String> response = new ArrayList<String>();
         String line;
         while ( (line = br.readLine()) != null){
@@ -282,16 +286,14 @@ public class BattlePluginsAPI {
             if (!f.mkdirs()){
                 throw new IOException("Couldn't create config directory");}
         }
-        try {
-            f = new File(f, "config.yml");
-            if (!f.exists()){
-                if (f.createNewFile()) {
-                    throw new IOException("Couldn't create config file");}
-            }
-            return f;
-        } catch (IOException e) {
-            return null;
+        f = new File(f, "config.yml");
+        if (!f.exists()){
+            /// Strangely the file can be created correctly and createNewFile can
+            // return false, so double check
+            if (f.createNewFile() && !f.exists()) {
+                throw new IOException("Couldn't create config file");}
         }
+        return f;
     }
 
     /**
@@ -305,7 +307,8 @@ public class BattlePluginsAPI {
         FileConfiguration c;
         c = YamlConfiguration.loadConfiguration(f);
         if (c.get("API-Key", null) == null || c.get("SendStatistics", null)==null) {
-            c.options().header("Configuration file for BattlePluginsAPI. http://battleplugins.com\n"+
+            c.options().header(
+                    "Configuration file for BattlePluginsAPI. http://battleplugins.com\n"+
                     "Allows plugins using BattlePluginsAPI to interface with the website\n"+
                     "API-Key : unique id for server authentication\n"+
                     "SendStatistics : set to false to not send statistics");
@@ -384,7 +387,8 @@ public class BattlePluginsAPI {
         }
     }
 
-    /** Code from erikson, http://stackoverflow.com/questions/326390/how-to-create-a-java-string-from-the-contents-of-a-file*/
+    /** Code from erikson,
+     * http://stackoverflow.com/questions/326390/how-to-create-a-java-string-from-the-contents-of-a-file*/
     private static String toString(String path) throws IOException {
         FileInputStream stream = new FileInputStream(new File(path));
         try {
