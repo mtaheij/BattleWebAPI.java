@@ -24,6 +24,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -107,10 +108,10 @@ public class BattlePluginsAPI {
         File f = new File(file);
         addPair("title", title);
         addPair("content", toString(f.getPath()));
-        List<String> result = post(new URL(PROTOCOL + "://" + HOST + "/api/web/paste/create"));
-        if (result == null || result.isEmpty()) return null;
-        String[] r = result.get(0).replaceAll("}|\\{|\"","").split(":");
-        return PROTOCOL + "://" + HOST + "/paste/"+r[1];
+        Map<String,Object> result = post(new URL(PROTOCOL + "://" + HOST + "/api/web/paste/create"));
+        if (result.containsKey("id"))
+            return PROTOCOL + "://" + HOST + "/paste/"+result.get("id");
+        return null;
     }
 
     /**
@@ -219,7 +220,7 @@ public class BattlePluginsAPI {
      * @param url destination
      * @throws IOException
      */
-    public List<String> post(URL url) throws IOException {
+    public Map<String,Object> post(URL url) throws IOException {
         /// Connect
         URLConnection connection = url.openConnection(Proxy.NO_PROXY);
 
@@ -239,15 +240,15 @@ public class BattlePluginsAPI {
         /// Get our response
         final BufferedReader br = new BufferedReader(
                 new InputStreamReader(connection.getInputStream()));
-        List<String> response = new ArrayList<String>();
+        StringBuilder sb = new StringBuilder();
         String line;
-        while ( (line = br.readLine()) != null){
-            response.add(line);
+        while ( (line = br.readLine()) != null) {
+            sb.append(line);
         }
 
         os.close();
         br.close();
-        return response;
+        return stringToMap(sb.toString());
     }
 
     String gzip(String str) throws IOException {
@@ -266,6 +267,25 @@ public class BattlePluginsAPI {
             sb.append(e.getKey()).append("=").append(e.getValue());
         }
         return sb.toString();
+    }
+
+    /**
+     * A naive (very naive) unnested json parset
+     * @param str string to parse
+     * @return Map of strings to Objects
+     */
+    Map<String,Object> stringToMap(String str) {
+        Map<String,Object> map = new HashMap<String, Object>();
+        int f = str.indexOf('{');
+        int l = str.lastIndexOf('}');
+        if (f == -1 || l == -1 || f >= l || str.length() < 2) {
+            return map;}
+        String[] kvs = str.substring(f+1, l).split(",");
+        for (String kv : kvs) {
+            String[] split = kv.replace('"', ' ').split(":");
+            map.put(split[0].trim(), split[1].trim());
+        }
+        return map;
     }
 
 
