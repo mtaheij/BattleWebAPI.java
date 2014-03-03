@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Proxy;
@@ -289,9 +290,13 @@ public class BattlePluginsAPI {
     }
 
 
+    /**
+     * The name and version
+     * @return name and version
+     */
     @Override
     public String toString(){
-        return "[BattlePluginsAPI]";
+        return "[BattlePluginsAPI v" + version+"]";
     }
 
     /**
@@ -362,6 +367,9 @@ public class BattlePluginsAPI {
                     }
                 } catch(UnknownHostException e) {
                     /** Don't send stack trace on no network errors, just continue on*/
+                } catch(InterruptedIOException e) {
+                    plugin.getLogger().warning(e.getMessage());
+                    sendStats.set(false);
                 } catch(SocketException e){
                     /** Don't send stack trace on no network errors, just continue on*/
                     if (e.getMessage() == null || !e.getMessage().contains("unreachable")){
