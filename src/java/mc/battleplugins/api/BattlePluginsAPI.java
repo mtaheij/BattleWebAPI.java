@@ -55,28 +55,24 @@ public class BattlePluginsAPI {
     protected String apiKey = "";
 
     /** whether to send stats or not */
-    AtomicBoolean sendStats;
+    final AtomicBoolean sendStats = new AtomicBoolean(true);
 
     /** ID of any currently running tasks */
     Integer timer;
 
     /** Key Value pairs to send */
-    final Map<String, String> pairs;
+    final Map<String, String> pairs = new TreeMap<String, String>();
 
     /** The plugins to send stats about */
-    List<Plugin> plugins;
+    final List<Plugin> plugins = new ArrayList<Plugin>();
 
     /** debug */
     protected boolean debug;
 
     public BattlePluginsAPI() {
-        this.pairs = new TreeMap<String, String>();
     }
 
     public BattlePluginsAPI(Plugin plugin) {
-        this.sendStats = new AtomicBoolean(true);
-        this.pairs = new TreeMap<String, String>();
-        this.plugins = new ArrayList<Plugin>();
         plugins.add(plugin);
         try {
             if (getConfig().getBoolean("SendStatistics",false)) {
@@ -399,8 +395,6 @@ public class BattlePluginsAPI {
      * @param plugin the plugin to send information about
      */
     public void scheduleSendStats(final Plugin plugin) {
-        if (plugins ==null) {
-            plugins = new ArrayList<Plugin>();}
         plugins.add(plugin);
         if (timer != null){
             Bukkit.getScheduler().cancelTask(timer);
@@ -424,8 +418,6 @@ public class BattlePluginsAPI {
      * stop sending plugin statistics for the given Plugin
      */
     public void stopSendingStatistics(Plugin plugin) throws IOException {
-        if (plugins == null || plugins.isEmpty())
-            return;
         if (plugins.remove(plugin)){
             scheduleSendStats(plugins);
         }
