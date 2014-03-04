@@ -46,7 +46,7 @@ public class BattlePluginsAPI {
     static final String PROTOCOL = "http";
 
     /** battleplugins site */
-    protected static String HOST = "battleplugins.com";
+    protected static String HOST = "dev.battleplugins.com";
 
     /** current user agent */
     static final String USER_AGENT = "BattlePluginsAPI/v1.0";
@@ -69,7 +69,7 @@ public class BattlePluginsAPI {
     /** debug */
     protected boolean debug;
 
-    public BattlePluginsAPI() throws IOException {
+    public BattlePluginsAPI() {
         this.pairs = new TreeMap<String, String>();
     }
 
