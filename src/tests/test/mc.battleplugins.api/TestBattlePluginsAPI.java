@@ -14,6 +14,8 @@ public class TestBattlePluginsAPI extends BattlePluginsAPI {
     String name;
     String version;
     int playersOnline = 0;
+    /** battleplugins site */
+
 
     public TestBattlePluginsAPI(String testServer,String version, String configPath) throws IOException {
         super();
@@ -21,7 +23,10 @@ public class TestBattlePluginsAPI extends BattlePluginsAPI {
         this.version = version;
         this.configPath = configPath;
     }
-
+    public void set(){
+        HOST = "dev.battleplugins.com";
+        debug = true;
+    }
     @Override
     public File getConfigurationFile() {
         return new File(configPath);

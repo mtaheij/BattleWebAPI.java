@@ -46,7 +46,7 @@ public class BattlePluginsAPI {
     static final String PROTOCOL = "http";
 
     /** battleplugins site */
-    static final String HOST = "battleplugins.com";
+    protected static String HOST = "battleplugins.com";
 
     /** current user agent */
     static final String USER_AGENT = "BattlePluginsAPI/v1.0";
@@ -63,8 +63,11 @@ public class BattlePluginsAPI {
     /** Key Value pairs to send */
     final Map<String, String> pairs;
 
-    /** The plugin to update */
-    Plugin plugin;
+    /** The plugins to send stats about */
+    List<Plugin> plugins;
+
+    /** debug */
+    protected boolean debug;
 
     public BattlePluginsAPI() throws IOException {
         this.pairs = new TreeMap<String, String>();
@@ -73,7 +76,8 @@ public class BattlePluginsAPI {
     public BattlePluginsAPI(Plugin plugin) {
         this.sendStats = new AtomicBoolean(true);
         this.pairs = new TreeMap<String, String>();
-        this.plugin = plugin;
+        this.plugins = new ArrayList<Plugin>();
+        plugins.add(plugin);
         try {
             if (getConfig().getBoolean("SendStatistics",false)) {
                 sendStats.set(true);
@@ -121,7 +125,14 @@ public class BattlePluginsAPI {
      * @throws IOException
      */
     public void sendStatistics(Plugin plugin) throws IOException {
-        addPluginInfo(plugin);
+        List<Plugin> plugins = new ArrayList<Plugin>();
+        plugins.add(plugin);
+        sendStatistics(plugins);
+    }
+
+    public void sendStatistics(final List<Plugin> plugins) throws IOException {
+        for (Plugin plugin : plugins){
+            addPluginInfo(plugin);}
         addServerInfo();
         addSystemInfo();
         post(new URL(PROTOCOL + "://" + HOST + "/statistics/set"));
@@ -224,7 +235,7 @@ public class BattlePluginsAPI {
     public Map<String,Object> post(URL url) throws IOException {
         /// Connect
         URLConnection connection = url.openConnection(Proxy.NO_PROXY);
-
+        if (debug) System.out.println(url + " ? " + toString(pairs));
         byte[] data = toString(pairs).getBytes();
         connection.addRequestProperty("POST", "/api/web/blog/all HTTP/1.1");
         connection.addRequestProperty("Host", HOST);
@@ -334,9 +345,9 @@ public class BattlePluginsAPI {
         if (c.get("API-Key", null) == null || c.get("SendStatistics", null)==null) {
             c.options().header(
                     "Configuration file for BattlePluginsAPI. http://battleplugins.com\n"+
-                    "Allows plugins using BattlePluginsAPI to interface with the website\n"+
-                    "API-Key : unique id for server authentication\n"+
-                    "SendStatistics : set to false to not send statistics");
+                            "Allows plugins using BattlePluginsAPI to interface with the website\n"+
+                            "API-Key : unique id for server authentication\n"+
+                            "SendStatistics : set to false to not send statistics");
             c.addDefault("API-Key", "");
             c.addDefault("SendStatistics", true);
             c.options().copyDefaults(true);
@@ -345,40 +356,38 @@ public class BattlePluginsAPI {
         return c;
     }
 
-    /**
-     * schedule BattlePluginsAPI to send plugin statistic
-     * @param plugin the plugin to send information about
-     */
-    public void scheduleSendStats(final Plugin plugin) {
-        if (!sendStats.get())
+    private void scheduleSendStats(final List<Plugin> plugins){
+        if (!sendStats.get() || plugins.isEmpty())
             return;
         if (timer != null){
             Bukkit.getScheduler().cancelTask(timer);}
         //noinspection deprecation
-        timer = Bukkit.getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable(){
+        timer = Bukkit.getScheduler().scheduleAsyncRepeatingTask(plugins.iterator().next(),new Runnable(){
             @Override
             public void run() {
-                try {
-                    if (sendStats.get()) {
-                        sendStatistics(plugin);
-                    } else if (timer != null) {
+                if (!sendStats.get()) {
+                    if (timer != null) {
                         Bukkit.getScheduler().cancelTask(timer);
                         timer = null;
                     }
-                } catch(UnknownHostException e) {
-                    /** Don't send stack trace on no network errors, just continue on*/
-                } catch(InterruptedIOException e) {
-                    plugin.getLogger().warning(e.getMessage());
-                    sendStats.set(false);
-                } catch(SocketException e){
-                    /** Don't send stack trace on no network errors, just continue on*/
-                    if (e.getMessage() == null || !e.getMessage().contains("unreachable")){
+                } else {
+                    try {
+                        sendStatistics(plugins);
+                    } catch(UnknownHostException e) {
+                        /** Don't send stack trace on no network errors, just continue on*/
+                    } catch(InterruptedIOException e) {
+                        Bukkit.getLogger().warning(e.getMessage());
+                        sendStats.set(false);
+                    } catch(SocketException e){
+                        /** Don't send stack trace on no network errors, just continue on*/
+                        if (e.getMessage() == null || !e.getMessage().contains("unreachable")){
+                            e.printStackTrace();
+                            sendStats.set(false);
+                        }
+                    } catch (IOException e) {
                         e.printStackTrace();
                         sendStats.set(false);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    sendStats.set(false);
                 }
             }
         },60*20+(new Random().nextInt(20*120))/* start between 1-3 minutes*/,
@@ -386,13 +395,39 @@ public class BattlePluginsAPI {
     }
 
     /**
-     * stop sending plugin statistic
+     * schedule BattlePluginsAPI to send plugin statistic
+     * @param plugin the plugin to send information about
+     */
+    public void scheduleSendStats(final Plugin plugin) {
+        if (plugins ==null) {
+            plugins = new ArrayList<Plugin>();}
+        plugins.add(plugin);
+        if (timer != null){
+            Bukkit.getScheduler().cancelTask(timer);
+            timer = null;
+        }
+        scheduleSendStats(plugins);
+    }
+
+    /**
+     * stop sending plugin statistics
      */
     public void stopSendingStatistics() throws IOException {
         setSending(false);
         if (timer != null) {
             Bukkit.getScheduler().cancelTask(timer);
             timer = null;
+        }
+    }
+
+    /**
+     * stop sending plugin statistics for the given Plugin
+     */
+    public void stopSendingStatistics(Plugin plugin) throws IOException {
+        if (plugins == null || plugins.isEmpty())
+            return;
+        if (plugins.remove(plugin)){
+            scheduleSendStats(plugins);
         }
     }
 

@@ -3,9 +3,12 @@ package test.mc.battleplugins.api;
 
 import junit.framework.TestCase;
 import mc.battleplugins.api.BattlePluginsAPI;
+import org.bukkit.plugin.Plugin;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -21,9 +24,14 @@ public class TestAPI extends TestCase {
 
     public void testStats() throws IOException {
         TestBattlePluginsAPI api = new TestBattlePluginsAPI("TestServer", "1.0", configFile);
+        api.set();
         api.setPlayersOnline(new Random().nextInt(10));
         TestPlugin tp = new TestPlugin("TestPlugin", "1.0");
-        api.sendStatistics(tp);
+        TestPlugin tp2 = new TestPlugin("TestPlugin2", "2.0");
+        List<Plugin> l = new ArrayList<Plugin>();
+        l.add(tp);    /** battleplugins site */
+        l.add(tp2);
+        api.sendStatistics(l);
     }
 
     Map<String,Object> stringToMap(String str) {
