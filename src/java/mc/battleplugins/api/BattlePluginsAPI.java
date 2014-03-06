@@ -196,6 +196,7 @@ public class BattlePluginsAPI {
         /// Connect
         URL url = new URL (baseUrl.getProtocol()+"://"+baseUrl.getHost()+
                 baseUrl.getPath() + "?" + toString(pairs));
+        if (debug) System.out.println(url);
         URLConnection connection = url.openConnection(Proxy.NO_PROXY);
 
         /// Connection information
@@ -231,7 +232,7 @@ public class BattlePluginsAPI {
     public Map<String,Object> post(URL url) throws IOException {
         /// Connect
         URLConnection connection = url.openConnection(Proxy.NO_PROXY);
-        if (debug) System.out.println(url + " ? " + toString(pairs));
+        if (debug) System.out.println(url + "?" + toString(pairs));
         byte[] data = toString(pairs).getBytes();
         connection.addRequestProperty("POST", "/api/web/blog/all HTTP/1.1");
         connection.addRequestProperty("Host", HOST);
@@ -381,7 +382,7 @@ public class BattlePluginsAPI {
                             sendStats.set(false);
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Bukkit.getLogger().warning(e.getMessage());
                         sendStats.set(false);
                     }
                 }
