@@ -388,7 +388,7 @@ public class BattlePluginsAPI {
                 }
             }
         },60*20+(new Random().nextInt(20*120))/* start between 1-3 minutes*/,
-                60*20*30/*send stats every 30 min*/);
+                60*20*15/*send stats every 15 min*/);
     }
 
     /**
