@@ -46,7 +46,7 @@ public class BattlePluginsAPI {
     static final String PROTOCOL = "http";
 
     /** battleplugins site */
-    protected static String HOST = "dev.battleplugins.com";
+    protected static String HOST = "battleplugins.com";
 
     /** current user agent */
     static final String USER_AGENT = "BattlePluginsAPI/v1.0";
