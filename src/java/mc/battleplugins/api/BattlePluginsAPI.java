@@ -336,9 +336,7 @@ public class BattlePluginsAPI {
      */
     public FileConfiguration getConfig() throws IOException {
         File f = getConfigurationFile();
-
-        FileConfiguration c;
-        c = YamlConfiguration.loadConfiguration(f);
+        FileConfiguration c = YamlConfiguration.loadConfiguration(f);
         if (c.get("API-Key", null) == null || c.get("SendStatistics", null)==null) {
             c.options().header(
                     "Configuration file for BattlePluginsAPI. http://battleplugins.com\n"+
@@ -351,6 +349,34 @@ public class BattlePluginsAPI {
             c.save(f);
         }
         return c;
+    }
+
+    /**
+     * Get the current API-Key
+     * @return API-Key
+     */
+    public String getAPIKey(){
+        try {
+            FileConfiguration c = getConfig();
+            return c.getString("API-Key");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Set the API-Key
+     * @param newKey new API key
+     */
+    public void setAPIKey(String newKey){
+        try {
+            FileConfiguration c = getConfig();
+            c.set("API-Key",newKey);
+            c.save(getConfigurationFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void scheduleSendStats(final List<Plugin> plugins){
@@ -455,4 +481,5 @@ public class BattlePluginsAPI {
             stream.close();
         }
     }
+
 }
