@@ -1,1 +1,1 @@
-Collection of methods for interacting with the battleplugins website. http://battleplugins.com
+Collection of methods for interacting with the BattlePlugins Web API. https://api.battleplugins.com
