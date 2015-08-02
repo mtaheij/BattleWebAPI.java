@@ -46,7 +46,7 @@ public class BattlePluginsAPI {
     static final String PROTOCOL = "http";
 
     /** battleplugins site */
-    protected static String HOST = "battleplugins.com";
+    protected static String HOST = "api.battleplugins.com";
 
     /** current user agent */
     static final String USER_AGENT = "BattlePluginsAPI/v1.0";
@@ -109,9 +109,9 @@ public class BattlePluginsAPI {
         File f = new File(file);
         addPair("title", title);
         addPair("content", toString(f.getPath()));
-        Map<String,Object> result = post(new URL(PROTOCOL + "://" + HOST + "/api/web/paste/create"));
-        if (result.containsKey("id"))
-            return PROTOCOL + "://" + HOST + "/paste/"+result.get("id");
+        Map<String,Object> result = post(new URL(PROTOCOL + "://" + HOST + "/v1/pastes"));
+        if (result.containsKey("message"))
+            return PROTOCOL + "://" + "bplug.in/"+result.get("message");
         return null;
     }
 
@@ -234,7 +234,7 @@ public class BattlePluginsAPI {
         URLConnection connection = url.openConnection(Proxy.NO_PROXY);
         if (debug) System.out.println(url + "?" + toString(pairs));
         byte[] data = toString(pairs).getBytes();
-        connection.addRequestProperty("POST", "/api/web/blog/all HTTP/1.1");
+        connection.addRequestProperty("POST", "/v1/pastes HTTP/1.1"); //set manually to paste URL for now 
         connection.addRequestProperty("Host", HOST);
         connection.addRequestProperty("X-API-Key", apiKey);
         connection.addRequestProperty("User-Agent", USER_AGENT);
