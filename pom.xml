@@ -5,7 +5,7 @@
     <artifactId>BattlePluginsAPI</artifactId>
     <packaging>jar</packaging>
     <version>1.0.8</version>
-    <name>BattlePluginsAPI</name>
+    <name>BattleWebAPI</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -25,6 +25,12 @@
           <version>1.7.2-R0.1-SNAPSHOT</version>
           <scope>provided</scope>
       </dependency>
+      <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <!-- How we will compile the plugin -->
     <build>
@@ -39,6 +45,7 @@
         <defaultGoal>install</defaultGoal>
         <!-- Where our source directory is -->
         <sourceDirectory>${basedir}/src/java</sourceDirectory>
+        <testSourceDirectory>${basedir}/src/tests</testSourceDirectory>
         <!-- Include all the resources we need -->
         <resources>
             <!-- Exclude JUnit test directory -->
