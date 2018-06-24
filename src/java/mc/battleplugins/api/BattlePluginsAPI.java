@@ -172,7 +172,7 @@ public class BattlePluginsAPI {
         addPair("bServerName", Bukkit.getServerName());
         addPair("bVersion", Bukkit.getVersion());
         addPair("bOnlineMode", String.valueOf(Bukkit.getServer().getOnlineMode()));
-        addPair("bPlayersOnline", String.valueOf(Bukkit.getServer().getOnlinePlayers().length));
+        addPair("bPlayersOnline", String.valueOf(Bukkit.getServer().getOnlinePlayers().size()));
     }
 
     /**
@@ -386,7 +386,6 @@ public class BattlePluginsAPI {
             Bukkit.getScheduler().cancelTask(timer);}
         //noinspection deprecation
         timer = Bukkit.getScheduler().scheduleAsyncRepeatingTask(plugins.iterator().next(),new Runnable(){
-            @Override
             public void run() {
                 if (!sendStats.get()) {
                     if (timer != null) {
